@@ -22,6 +22,12 @@ Fixpoint length {char : Set} (w : word char) : nat :=
   | a ++ w' => S (length w')
   end.
 
+Fixpoint append {char : Set} (w1 w2: word char) : word char :=
+  match w1 with
+  | Eps => w2
+  | a ++ w' => a ++ append w' w2
+  end.
+
 Definition eq_word char : forall x y : word char, {x = y} + {x <> y}.
 Proof.
   intros.
@@ -144,3 +150,48 @@ Lemma CFG_to_CNF_is_correct :
 Lemma rec_same_CFG_CNF :
   forall c : CFG,
   CFGRecognizedLanguage (CFGtoCNF c) = CFGRecognizedLanguage c.
+
+
+Record PDA := mkPDA {
+  pstates : Set
+  ; palphabet : Set
+  ; pstack : Set
+  ; ptransition : pstates -> option palphabet -> option pstack -> pstates -> option pstack -> Prop
+  ; pinitial : pstates -> Prop
+  ; pfinal : pstates -> Prop
+  ; pstackinitial : pstack
+}.
+
+Definition pconfiguration (p : PDA) := prod (pstates p) (word (pstack p)).
+
+Definition possibleTransition {p : PDA} (c1 c2 : pconfiguration p) (a : option (palphabet p)) : Prop :=
+  let (q1, g1) := c1 in
+  let (q2, g2) := c2 in
+    exists g' g'' : word (pstack p),
+    exists z : pstack p,
+    match g'' with
+    | Eps => ptransition p q1 a (Some z) q2 None
+    | s ++ g''' => ptransition p q1 a (Some z) q2 (Some s)
+    end
+    /\ g2 = append g' g''.
+
+Definition finalConfig {p : PDA} (c : pconfiguration p) : Prop :=
+  let (q, g) := c in
+  pinitial p q.
+
+Definition initialConfig {p : PDA} (c : pconfiguration p) : Prop :=
+  let (q, g) := c in
+  pfinal p q /\ g = pstackinitial p ++ Eps.
+
+Fixpoint isExecution {p : PDA} (cs : list (pconfiguration p)) (letters : word (palphabet p)) : Prop :=
+  match cs with
+  | [] => True
+  | [c] => True
+  | c1 :: c2 :: rest =>
+    match letters with
+    | Eps => possibleTransition c1 c2 None
+    | a ++ ls => possibleTransition c1 c2 (Some a) /\ isExecution (c2 :: rest) ls
+    end
+  end.
+
+
