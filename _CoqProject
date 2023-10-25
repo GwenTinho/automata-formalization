@@ -6,3 +6,4 @@ nat.v
 automata.v
 pda.v
 word.v
+exo.v
