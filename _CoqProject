@@ -7,3 +7,4 @@ automata.v
 pda.v
 word.v
 exo.v
+equiv.v

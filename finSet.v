@@ -1,7 +1,8 @@
 From Automata Require Import bij.
+Import PeanoNat.
 
 
-Definition interval (n : nat) := {x | x < n}.
+Definition interval (n : nat) := {x | x <= n}.
 
 Definition finite (s : Set) := exists (n : nat) (f : s -> interval n), bijective f.
 
@@ -14,6 +15,38 @@ Proof.
     exact (iden_is_bijective (interval n)).
 Qed.
 
+Definition lte_size (s t : Set) (p : finite s) (q : finite t) :=
+  exists f : s -> t, injective f.
+
+Lemma pigeonhole_baby
+    :  forall m n : nat, m < n
+    -> forall f : nat -> nat, (forall i, f i < m)
+    -> exists i, i < n
+    -> exists j, j < i /\ f i = f j.
+Proof.
+  intros.
+  induction n.
+  inversion H.
+  exists (S m).
+  intro.
+  rewrite <- PeanoNat.Nat.succ_lt_mono in H1.
+  apply IHn in H1.
+  destruct H1.
+
+
+
+(*(generalization of prev If S and T are sets,
+and the cardinality of S is greater than the cardinality of T,
+ then there is no injective function from S to T.*)
+Lemma pigeonhole : forall (s t: Set),
+  finite s ->
+  finite t ->
+  (exists f : s -> t, surjective f) ->
+  (forall g : s -> t, not (bijective g)) ->
+  (forall h : s -> t, not (injective h)).
+Proof.
+
+Admitted.
 
 
 (*
