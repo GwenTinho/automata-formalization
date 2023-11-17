@@ -33,6 +33,7 @@ Proof.
   apply IHn in H1.
   destruct H1.
 
+Admitted.
 
 
 (*(generalization of prev If S and T are sets,
