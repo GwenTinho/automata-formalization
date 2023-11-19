@@ -107,4 +107,27 @@ Proof.
 Qed.
 
 (*TODO implement lemma for two preorders gives an equiv*)
+Definition pre_equiv (R : relation X) :=
+    fun x y => R x y /\ R y x.
+
+Lemma pre_equiv_of_preorder_is_equiv : forall (R : relation X) (p : preorder R),
+    equivalence (pre_equiv R).
+Proof.
+    intros R [Refl Trans].
+    repeat split;try apply Refl.
+    -   destruct H.
+        assumption.
+    -   destruct H.
+        assumption.
+    -   destruct H.
+        destruct H0.
+        apply Trans with y; assumption.
+    -   destruct H.
+        destruct H0.
+        apply Trans with y; assumption.
+Qed.
+
+Definition e_class (R : relation X) (x : X) :=
+    let RE := close_equivalence R in
+    {y : X | RE x y }.
 

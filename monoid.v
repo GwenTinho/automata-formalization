@@ -36,5 +36,6 @@ Lemma finiteHasIdem : forall (m : monoid) (x : mset m),
     fin_mon m -> exists k : nat, k > 0 /\ idempotent (pow x k).
 Proof.
     intros.
-
-
+    destruct H as [n H].
+    exists n.
+Admitted.

@@ -8,3 +8,4 @@ pda.v
 word.v
 exo.v
 equiv.v
+monoid.v
