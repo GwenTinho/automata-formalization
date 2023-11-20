@@ -47,9 +47,11 @@ Proof.
       assumption.
 Qed.
 
+Definition isomorphism_pair (A B : Type) (f : A -> B) (g : B -> A) := (forall x : A, g (f x) = x) /\ (forall y : B, f (g y) = y).
+
 Definition isomorphism {A B : Type} (f : A -> B) :=
   exists g : B -> A,
-  (forall x : A, g (f x) = x) /\ (forall y : B, f (g y) = y).
+  isomorphism_pair A B f g.
 
 Lemma bijective_iff_iso : forall (A B : Type) (f : A -> B),
   isomorphism f <-> bijective f.
@@ -86,14 +88,30 @@ Proof.
       apply FG.
 Qed.
 
+Lemma isomorphism_pair_symmetric : forall (A B : Type) (f : A -> B) (g : B -> A),
+  isomorphism_pair A B f g <-> isomorphism_pair B A g f.
+Proof.
+  intros.
+  split.
+  - intros [H K].
+    split.
+    + apply K.
+    + apply H.
+  - intros [H K].
+    split.
+    + apply K.
+    + apply H.
+Qed.
+
+
 Definition identity (A : Type) (x : A) := x.
 
 Lemma iden_is_iso : forall A : Type, isomorphism (identity A).
 Proof.
   intro.
-  unfold isomorphism.
   exists (identity A).
   unfold identity.
+  unfold isomorphism_pair.
   auto.
 Qed.
 
