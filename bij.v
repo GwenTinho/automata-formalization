@@ -47,11 +47,11 @@ Proof.
       assumption.
 Qed.
 
-Definition isomorphism_pair (A B : Type) (f : A -> B) (g : B -> A) := (forall x : A, g (f x) = x) /\ (forall y : B, f (g y) = y).
+Definition isomorphism_pair {A B : Type} (f : A -> B) (g : B -> A) := (forall x : A, g (f x) = x) /\ (forall y : B, f (g y) = y).
 
 Definition isomorphism {A B : Type} (f : A -> B) :=
   exists g : B -> A,
-  isomorphism_pair A B f g.
+  isomorphism_pair f g.
 
 Lemma bijective_iff_iso : forall (A B : Type) (f : A -> B),
   isomorphism f <-> bijective f.
@@ -89,7 +89,7 @@ Proof.
 Qed.
 
 Lemma isomorphism_pair_symmetric : forall (A B : Type) (f : A -> B) (g : B -> A),
-  isomorphism_pair A B f g <-> isomorphism_pair B A g f.
+  isomorphism_pair f g <-> isomorphism_pair g f.
 Proof.
   intros.
   split.
@@ -102,6 +102,23 @@ Proof.
     + apply K.
     + apply H.
 Qed.
+
+Lemma bijective_gives_inverse : forall (A B : Type) (f : A -> B),
+  bijective f -> exists g : B -> A, isomorphism_pair f g /\ bijective g.
+Proof.
+  intros A B f Bij.
+  assert (Iso := Bij).
+  rewrite <- bijective_iff_iso in Iso.
+  destruct Iso as [g IsoP].
+  exists g.
+  split.
+  - assumption.
+  - rewrite <- bijective_iff_iso.
+    exists f.
+    rewrite isomorphism_pair_symmetric.
+    assumption.
+Qed.
+
 
 
 Definition identity (A : Type) (x : A) := x.
@@ -165,10 +182,6 @@ Proof.
       rewrite <- H in H0.
       assumption.
 Qed.
-
-
-
-
 
 
 

@@ -4,7 +4,11 @@ Require Import Coq.Logic.ClassicalUniqueChoice.
 Require Import Coq.Lists.List.
 
 (*IDEA 1*)
-Definition naive_interval (n : nat) := {x | x <= n}.
+
+Inductive naive_interval : nat -> Set :=
+| inil : naive_interval 0
+| icons : forall (n : nat), naive_interval (S n) -> naive_interval n.
+
 Definition naive_finite (s : Set) := exists (n : nat) (f : s -> naive_interval n), bijective f.
 
 Definition naive_finite_op (s : Set) := exists (n : nat) (f : naive_interval n -> s), bijective f.
@@ -13,14 +17,19 @@ Lemma naive_finite_iff_naive_finite_op : forall s : Set, naive_finite s <-> naiv
 Proof.
   intro.
   split.
-  intros [n [f H]].
-  assert (H' := H).
-  rewrite <- bijective_iff_iso in H.
-  destruct H as [g H].
-  exists n.
-  exists g.
-
-Admitted.
+  - intros [n [f H]].
+    apply bijective_gives_inverse in H.
+    destruct H as [g [Iso BijG]].
+    exists n.
+    exists g.
+    assumption.
+  - intros [n [g H]].
+    apply bijective_gives_inverse in H.
+    destruct H as [f [Iso BijF]].
+    exists n.
+    exists f.
+    assumption.
+Qed.
 
 
 (*
@@ -48,8 +57,18 @@ Lemma naive_finite_iff_finite : forall s : Set, finite s <-> naive_finite s.
 Proof.
   intro.
   split.
-  intros [n [f H]].
-  exists n.
+  - intros [n [f H]].
+    rewrite naive_finite_iff_naive_finite_op.
+    exists n.
+    induction n.
+    +  exists (fun x =>
+      match x with
+      | inil => f 0
+      | icons n t => f n
+      end).
+      split.
+      * intros x y H0.
+        destruct x.
 
 Admitted.
 
@@ -57,7 +76,7 @@ Admitted.
 Lemma interval_is_finite : forall n : nat, naive_finite (naive_interval n).
 Proof.
     intro.
-    unfold finite.
+    unfold naive_finite.
     exists n.
     exists (identity (naive_interval n)).
     exact (iden_is_bijective (naive_interval n)).
