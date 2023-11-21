@@ -1,16 +1,15 @@
 Require Import Automata.bij.
-
-Parameters A B : Type.
+Require Import Coq.Logic.FunctionalExtensionality.
 
 Definition Inside{X} (x : X) := True.
 
-Definition preImage (f : A -> B) (s : B -> Prop) (x : A) := s (f x).
+Definition preImage{A B : Type} (f : A -> B) (s : B -> Prop) (x : A) := s (f x).
 
-Definition Image (f : A -> B) (s : A -> Prop) (y : B) := exists x, s x /\ f x = y.
+Definition Image{A B : Type} (f : A -> B) (s : A -> Prop) (y : B) := exists x, s x /\ f x = y.
 
-Definition fiber (f : A -> B) (y : B) (x : A) := f x = y.
+Definition fiber{A B : Type} (f : A -> B) (y : B) (x : A) := f x = y.
 
-Lemma surjective_iff_full_image : forall (f : A -> B),
+Lemma surjective_iff_full_image : forall (A B : Type) (f : A -> B),
   surjective f <-> forall y : B, Image f Inside y.
 Proof.
   intro.
@@ -29,14 +28,39 @@ Qed.
 
 Section Composition.
 
-Parameters X Y Z H K: Type.
+Definition composition{X Y Z : Type} (f : X -> Y) (g : Y -> Z) := fun x => (g (f x)).
 
-Definition composition (f : X -> Y) (g : Y -> Z) (x : X) := (g (f x)).
+Notation "f ; g" := (composition f g) (at level 60).
 
-Notation "g . f" := (composition f g) (at level 60).
-
-Lemma comp_assoc : forall (f : X -> Y) (g : Y -> Z) (h : Z -> K),
-  (h . g) . f = h . (g . f).
+Lemma comp_assoc : forall (X Y Z K : Type) (f : X -> Y) (g : Y -> Z) (h : Z -> K),
+  (f ; g) ; h = f ; (g ; h).
 Proof.
+  reflexivity.
+Qed.
+
+Definition identity (A : Type) := fun x : A => x.
+
+Lemma comp_r_unit : forall (X Y : Type) (f : X -> Y),
+  f ; identity Y = f.
+Proof.
+  reflexivity.
+Qed.
+
+
+Lemma comp_l_unit : forall (X Y : Type) (f : X -> Y),
+  identity X; f  = f.
+Proof.
+  reflexivity.
+Qed.
+
+Lemma factorizaation : forall (X Y : Set) (f : X -> Y),
+  exists (ImF : Set) (epi : X -> ImF) (mono : ImF -> Y),
+    f = epi ; mono /\ surjective epi /\ injective mono.
+Proof.
+  intros.
+  exists {y : Y | Image f Inside y}.
+  exists (fun x : X => sig (f x, Inside (f x)) ).
+
+Admitted.
 
 (*WANT TO DEFINE FACTORIZATION*)
