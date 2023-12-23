@@ -21,7 +21,7 @@ Proof.
     + apply I.
     + assumption.
   - intros H y.
-    destruct (H y) as [x [A B]].
+    destruct (H y) as [x [K0 K1]].
     exists x.
     assumption.
 Qed.
@@ -53,14 +53,67 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma factorizaation : forall (X Y : Set) (f : X -> Y),
-  exists (ImF : Set) (epi : X -> ImF) (mono : ImF -> Y),
-    f = epi ; mono /\ surjective epi /\ injective mono.
+Definition epi{X Y} (f : X -> Y) := forall Z (h g : Y -> Z), f ; g = f ; h -> g = h.
+
+Definition mono{X Y} (f : X -> Y) := forall Z (h g : Z -> X), g ; f = h ; f -> g = h.
+
+Lemma epi_iff_surjective : forall (X Y : Type) (f : X -> Y), epi f <-> surjective f.
 Proof.
   intros.
-  exists {y : Y | Image f Inside y}.
-  exists (fun x : X => sig (f x, Inside (f x)) ).
-
+  split.
+  intro.
+  rewrite surjective_iff_full_image.
+  assert (f ; (fun y : Y => Image f Inside y) = f ; (fun y : Y => True)).
+  apply functional_extensionality.
+  intro.
+  unfold composition.
+  unfold Inside.
+  unfold Image.
+  admit. (*disgusting*)
+  apply H in H0.
+  intro.
+  apply equal_f with (x := y) in H0.
+  rewrite H0.
+  apply I.
+  intro.
+  intros Z g h K.
+  apply functional_extensionality.
+  intro.
+  rename x into y.
+  destruct (H y).
+  rewrite <- H0.
+  unfold composition in K.
+  apply equal_f with x in K.
+  assumption.
 Admitted.
+
+Lemma mono_iff_injective : forall (X Y : Type) (f : X -> Y), mono f <-> injective f.
+Proof.
+  intros.
+  split.
+  - intros M x y H.
+    assert (K := M unit (fun _ => x) (fun _ => y)).
+    assert ((fun _ : unit => y); f = (fun _ : unit => x); f).
+    f_equal.
+    apply K.
+    apply functional_extensionality.
+    intro.
+    unfold composition.
+    rewrite H.
+    reflexivity.
+    apply K in H0.
+    apply equal_f in H0.
+    rewrite H0.
+    reflexivity.
+    exact tt.
+  - intros I Z h g H.
+    apply functional_extensionality.
+    intro.
+    apply I.
+    apply equal_f with x in H.
+    assumption.
+Qed.
+
+
 
 (*WANT TO DEFINE FACTORIZATION*)
